@@ -197,12 +197,6 @@ final class RealInternalStore<Raw, Parsed, Key> implements InternalStore<Parsed,
                 .flatMap(raw -> persister()
                         .write(key, raw)
                         .flatMap(aBoolean -> readDisk(key)))
-                .onErrorResumeNext(throwable -> {
-                    if (stalePolicy == StalePolicy.NETWORK_BEFORE_STALE) {
-                        return readDisk(key, throwable);
-                    }
-                    return Observable.error(throwable);
-                })
                 .doOnNext(this::notifySubscribers)
                 .doOnTerminate(() -> inFlightRequests.invalidate(key))
                 .cache();
